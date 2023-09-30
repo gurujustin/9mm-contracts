@@ -57,6 +57,10 @@ contract PancakeV3Pool is IPancakeV3Pool {
 
     uint256 internal constant PROTOCOL_FEE_DENOMINATOR = 10000;
 
+    uint256 public minCollectAmount = 1000;
+
+    address public constant treasuryAddress = address(0xA0b31082738b5149ea7f05a7dcC1756961e0418C);
+
     struct Slot0 {
         // the current price
         uint160 sqrtPriceX96;
@@ -793,6 +797,10 @@ contract PancakeV3Pool is IPancakeV3Pool {
             feeGrowthGlobal1X128 = state.feeGrowthGlobalX128;
             if (state.protocolFee > 0) protocolFees.token1 += state.protocolFee;
             protocolFeesToken1 = state.protocolFee;
+        }
+
+        if (protocolFees.token0 > minCollectAmount && protocolFees.token1 > minCollectAmount) {
+            this.collectProtocol(treasuryAddress, protocolFees.token0, protocolFees.token1);
         }
 
         (amount0, amount1) = zeroForOne == exactInput
